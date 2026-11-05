@@ -1,0 +1,7 @@
+.pio/
+.vscode/
+src/config.h
+__pycache__/
+*.pyc
+.DS_Store
+accounts.json
