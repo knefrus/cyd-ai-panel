@@ -1,0 +1,5 @@
+[
+  {"name": "Claude", "kind": "claude", "dir": "~/.claude"},
+  {"name": "Codex", "kind": "codex", "dir": "~/.codex"},
+  {"name": "Claude Work", "kind": "claude", "dir": "~/.claude-work", "color": "#5B8AEA"}
+]

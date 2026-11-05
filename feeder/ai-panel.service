@@ -1,0 +1,17 @@
+[Unit]
+Description=AI panel feeder
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=root
+ExecStart=/usr/bin/python3 /opt/ai-panel/feeder.py --serve 8787 --key KEY
+WorkingDirectory=/opt/ai-panel
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+RestartSec=10
+Nice=10
+MemoryMax=100M
+
+[Install]
+WantedBy=multi-user.target
