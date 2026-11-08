@@ -5,3 +5,7 @@ __pycache__/
 *.pyc
 .DS_Store
 accounts.json
+data/
+render
+.env
+auth.json

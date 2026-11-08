@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desk panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F1F1EF;--card:#FFFFFF;--line:#E3E3E0;--ink:#151515;--muted:#8A8A86;--faint:#B9B9B4;
+  --chip:#F2F2F0;--accent:#151515;--warn:#E5533D;--live:#2FA36B;--sel:#4F7FE0;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0D0D0D;--card:#171717;--line:#262626;--ink:#ECECEC;--muted:#7A7A7A;--faint:#4A4A4A;--chip:#212121;--accent:#ECECEC;
+}}
+*{box-sizing:border-box}
+input[type=range]{accent-color:var(--ink)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+@media (max-width:560px){#ver{display:none}header .btn{padding:7px 10px}header{gap:6px}}
+header h1{font-size:18px;font-weight:600;margin:0;letter-spacing:-.01em}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);display:inline-block}
+.dot.on{background:var(--live)}
+.status{font:11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+.sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--faint)}
+.btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:600}
+.btn.primary:disabled{opacity:.35;cursor:default}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn{text-decoration:none}
+.btn.danger{color:var(--warn)}
+.btn.sm{padding:4px 9px;font-size:13px;border-radius:8px}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+nav button{border:0;background:none;padding:9px 12px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav button.on{color:var(--ink);border-color:var(--ink);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.label{font:11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.screens{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;cursor:pointer}
+.pill.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stage{position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 0 0 7px #111,0 10px 30px rgba(0,0,0,.18);margin:8px 7px 22px;touch-action:none;user-select:none}
+.stage img{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+.box{position:absolute;border-radius:6px;cursor:grab;outline:1px dashed transparent;transition:outline-color .1s}
+.stage:hover .box{outline-color:rgba(127,127,127,.45)}
+.box.sel{outline:2px solid var(--sel)!important}
+.box .tag{position:absolute;left:4px;top:-1px;transform:translateY(-100%);font:10px var(--mono);background:var(--sel);color:#fff;padding:1px 5px;border-radius:4px;opacity:0;pointer-events:none;white-space:nowrap}
+.box.sel .tag{opacity:1}
+.box .rs{position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;border-radius:50%;background:var(--sel);border:2px solid #fff;cursor:nwse-resize;display:none}
+.box.sel .rs{display:block}
+.drop{position:absolute;border:2px dashed var(--sel);border-radius:6px;background:rgba(79,127,224,.12);pointer-events:none;display:none}
+.drop.bad{border-color:var(--warn);background:rgba(229,83,61,.12)}
+.cells{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .15s}
+.stage.drag .cells{opacity:1}
+.cells div{position:absolute;border:1px dashed rgba(127,127,127,.4);border-radius:5px}
+.palette{display:flex;flex-wrap:wrap;gap:6px}
+.palette button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 10px;cursor:pointer;font-size:13px}
+.palette button:hover{border-color:var(--ink)}
+.field{margin-bottom:12px}
+.field input[type=text],.field input[type=number],.field input[type=url],.field select,.field textarea,input.in,select.in{width:100%;border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:var(--bg);outline:none}
+.field textarea{min-height:90px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus,input.in:focus{border-color:var(--ink)}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{min-width:0}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.toggle{display:flex;align-items:center;gap:8px;cursor:pointer}
+.toggle input{width:16px;height:16px;accent-color:var(--ink)}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:grid;gap:8px;grid-template-columns:repeat(12,minmax(0,1fr));align-items:end}
+.item .c2{grid-column:span 2}.item .c3{grid-column:span 3}.item .c4{grid-column:span 4}.item .c5{grid-column:span 5}.item .c6{grid-column:span 6}.item .c12{grid-column:span 12}
+@media (max-width:700px){.item>*{grid-column:span 12!important}}
+.res{font:12px var(--mono);color:var(--muted);margin-top:6px;white-space:pre-wrap}
+.ok{color:var(--live)}.bad{color:var(--warn)}
+code{font:12px var(--mono);background:var(--chip);padding:2px 5px;border-radius:5px}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.swatch{width:36px;height:34px;border:1px solid var(--line);border-radius:9px;padding:2px;background:var(--bg)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;transition:.2s;font-size:13px;z-index:9}
+.toast.on{transform:translateX(-50%);opacity:1}
+.gifthumb{width:100%;max-height:120px;object-fit:contain;border-radius:8px;background:var(--bg);margin-top:6px}
+h3{font-size:15px;margin:0 0 4px}
+p.sub{color:var(--muted);margin:0 0 14px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Desk panel</h1>
+    <span class="status"><span class="dot" id="live"></span><span id="ver">—</span></span>
+    <span class="sp"></span>
+    <button class="btn ghost" id="themeBtn" title="Тема превью">☀︎</button>
+    <button class="btn primary" id="saveBtn" disabled>Сохранить</button>
+    <a class="btn ghost" href="/logout" title="Выйти">Выйти</a>
+  </header>
+  <nav id="tabs"></nav>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const TYPES = {
+  clock:{name:"Часы",w:3,h:1}, agent:{name:"Лимиты аккаунта",w:3,h:3}, agents:{name:"Все аккаунты",w:6,h:2},
+  weather:{name:"Погода",w:3,h:1}, calendar:{name:"Календарь",w:3,h:3}, text:{name:"Текст",w:3,h:2},
+  ping:{name:"Пинг серверов",w:3,h:2}, pet:{name:"Питомец",w:2,h:3}, gif:{name:"Гифка",w:2,h:2},
+  activity:{name:"Активность",w:6,h:4}, host:{name:"Сервер",w:3,h:2}, focus:{name:"Фокус-таймер",w:3,h:2},
+  nodes:{name:"Ноды Remnawave",w:6,h:3},
+};
+const NOCARD = {clock:1, gif:1};
+const TABS = [["screens","Экраны"],["calendars","Календари"],["ping","Серверы"],["accounts","Аккаунты"],["settings","Настройки"]];
+let cfg = null, saved = "", tab = "screens", scr = 0, sel = null, dark = matchMedia("(prefers-color-scheme: dark)").matches;
+let state = {};
+
+const $ = (s, el = document) => el.querySelector(s);
+const h = (tag, attrs = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k === "class") e.className = v;
+    else if (k === "html") e.innerHTML = v;
+    else if (v !== false && v != null) e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+};
+const api = async (path, opts = {}) => {
+  const r = await fetch(path, {credentials: "same-origin", ...opts});
+  if (r.status === 401) { location.href = "/"; throw new Error("нужно войти"); }
+  if (!r.ok) throw new Error((await r.text()) || r.status);
+  return r;
+};
+const toast = (t) => { const e = $("#toast"); e.textContent = t; e.classList.add("on"); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove("on"), 2200); };
+const uid = () => Math.random().toString(16).slice(2, 10);
+const dirty = () => JSON.stringify(cfg) !== saved;
+const touch = () => { $("#saveBtn").disabled = !dirty(); schedulePreview(); };
+
+async function load() {
+  cfg = await (await api("/api/config")).json();
+  saved = JSON.stringify(cfg);
+  render();
+  refreshState();
+  setInterval(refreshState, 15000);
+  setInterval(() => tab === "screens" && schedulePreview(), 30000);
+}
+
+async function refreshState() {
+  try {
+    state = await (await api("/api/state")).json();
+    $("#live").classList.add("on");
+    $("#ver").textContent = "v " + state.version;
+  } catch (e) { $("#live").classList.remove("on"); $("#ver").textContent = "нет связи"; }
+}
+
+$("#saveBtn").onclick = async () => {
+  try {
+    const r = await (await api("/api/config", {method: "POST", body: JSON.stringify(cfg)})).json();
+    cfg = await (await api("/api/config")).json();
+    saved = JSON.stringify(cfg);
+    $("#saveBtn").disabled = true;
+    $("#ver").textContent = "v " + r.version;
+    toast("Сохранено — панель обновится за пару секунд");
+    render();
+  } catch (e) { toast("Ошибка: " + e.message); }
+};
+$("#themeBtn").onclick = () => { dark = !dark; $("#themeBtn").textContent = dark ? "☾" : "☀︎"; schedulePreview(); };
+$("#themeBtn").textContent = dark ? "☾" : "☀︎";
+addEventListener("beforeunload", (e) => { if (cfg && dirty()) { e.preventDefault(); e.returnValue = ""; } });
+
+function render() {
+  const nav = $("#tabs");
+  nav.replaceChildren(...TABS.map(([k, t]) => h("button", {class: tab === k ? "on" : "", onclick: () => { tab = k; render(); }}, t)));
+  const m = $("#main");
+  m.replaceChildren(({screens: viewScreens, calendars: viewCalendars, ping: viewPing, accounts: viewAccounts, settings: viewSettings})[tab]());
+  if (tab === "screens") schedulePreview(true);
+}
+
+/* ---------------- screens ---------------- */
+const GX = 10, GY = 10, GAP = 6, CW = 45, RH = 49;
+const rectOf = (w) => ({x: GX + w.x * (CW + GAP), y: GY + w.y * (RH + GAP), w: w.w * CW + (w.w - 1) * GAP, h: w.h * RH + (w.h - 1) * GAP});
+const pct = (v, total) => (v / total * 100) + "%";
+const overlaps = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const fits = (w, list) => w.x >= 0 && w.y >= 0 && w.x + w.w <= 6 && w.y + w.h <= 4 && !list.some(o => o !== w && o.id !== w.id && overlaps(w, o));
+
+function viewScreens() {
+  if (scr >= cfg.screens.length) scr = 0;
+  const S = cfg.screens[scr];
+  const strip = h("div", {class: "screens"},
+    cfg.screens.map((s, i) => h("button", {class: "pill" + (i === scr ? " on" : ""), onclick: () => { scr = i; sel = null; render(); }}, s.name || "Экран " + (i + 1))),
+    cfg.screens.length < 6 && h("button", {class: "btn sm", onclick: () => { cfg.screens.push({name: "Экран " + (cfg.screens.length + 1), widgets: []}); scr = cfg.screens.length - 1; sel = null; touch(); render(); }}, "+ экран"));
+
+  const stage = h("div", {class: "stage", id: "stage"});
+  stage.append(h("img", {id: "pv", alt: ""}));
+  const cells = h("div", {class: "cells"});
+  for (let y = 0; y < 4; y++) for (let x = 0; x < 6; x++) {
+    const r = rectOf({x, y, w: 1, h: 1});
+    cells.append(h("div", {style: `left:${pct(r.x, 320)};top:${pct(r.y, 240)};width:${pct(r.w, 320)};height:${pct(r.h, 240)}`}));
+  }
+  stage.append(cells);
+  const ghost = h("div", {class: "drop"});
+  stage.append(ghost);
+  S.widgets.forEach((w) => {
+    const r = rectOf(w);
+    const box = h("div", {class: "box" + (sel === w.id ? " sel" : ""), style: `left:${pct(r.x, 320)};top:${pct(r.y, 240)};width:${pct(r.w, 320)};height:${pct(r.h, 240)}`},
+      h("span", {class: "tag"}, TYPES[w.type].name + ` · ${w.w}×${w.h}`), h("span", {class: "rs"}));
+    box.addEventListener("pointerdown", (e) => startDrag(e, w, e.target.classList.contains("rs") ? "resize" : "move", stage, ghost));
+    stage.append(box);
+  });
+  stage.addEventListener("pointerdown", (e) => { if (e.target === stage || e.target.id === "pv") { sel = null; render(); } });
+
+  const palette = h("div", {class: "palette"}, Object.entries(TYPES).map(([k, t]) => h("button", {onclick: () => addWidget(k)}, "+ " + t.name)));
+
+  const left = h("div", {}, strip, stage, h("div", {class: "label"}, "Добавить виджет"), palette,
+    h("p", {class: "hint"}, "Перетаскивай блоки, тяни за синий кружок чтобы изменить размер. Сетка 6×4."));
+  const right = h("div", {class: "card"}, sel ? inspector(S.widgets.find(w => w.id === sel)) : screenInspector(S));
+  return h("div", {class: "grid2"}, left, right);
+}
+
+function startDrag(e, w, mode, stage, ghost) {
+  e.preventDefault(); e.stopPropagation();
+  if (sel !== w.id) { sel = w.id; render(); return startDragAfter(e, w, mode); }
+  startDragAfter(e, w, mode);
+}
+function startDragAfter(e, w, mode) {
+  const stage = $("#stage"), ghost = $(".drop", stage);
+  const sc = stage.getBoundingClientRect().width / 320;
+  const sx = e.clientX, sy = e.clientY;
+  const orig = {...w};
+  let cand = {...w};
+  stage.classList.add("drag");
+  const list = cfg.screens[scr].widgets;
+  const move = (ev) => {
+    const dx = Math.round((ev.clientX - sx) / sc / (CW + GAP)), dy = Math.round((ev.clientY - sy) / sc / (RH + GAP));
+    cand = mode === "move" ? {...orig, x: Math.max(0, Math.min(6 - orig.w, orig.x + dx)), y: Math.max(0, Math.min(4 - orig.h, orig.y + dy))}
+                           : {...orig, w: Math.max(1, Math.min(6 - orig.x, orig.w + dx)), h: Math.max(1, Math.min(4 - orig.y, orig.h + dy))};
+    const r = rectOf(cand);
+    Object.assign(ghost.style, {display: "block", left: pct(r.x, 320), top: pct(r.y, 240), width: pct(r.w, 320), height: pct(r.h, 240)});
+    ghost.classList.toggle("bad", !fits(cand, list));
+  };
+  const up = () => {
+    removeEventListener("pointermove", move); removeEventListener("pointerup", up);
+    stage.classList.remove("drag"); ghost.style.display = "none";
+    if (fits(cand, list) && (cand.x !== orig.x || cand.y !== orig.y || cand.w !== orig.w || cand.h !== orig.h)) {
+      Object.assign(w, {x: cand.x, y: cand.y, w: cand.w, h: cand.h}); touch(); render();
+    }
+  };
+  addEventListener("pointermove", move); addEventListener("pointerup", up);
+}
+
+function addWidget(type) {
+  const list = cfg.screens[scr].widgets;
+  if (list.length >= 12) return toast("На экране максимум 12 виджетов");
+  const t = TYPES[type];
+  const sizes = [[t.w, t.h], [Math.min(t.w, 3), Math.min(t.h, 2)], [2, 1], [1, 1]];
+  for (const [ww, hh] of sizes) for (let y = 0; y + hh <= 4; y++) for (let x = 0; x + ww <= 6; x++) {
+    const w = {id: uid(), type, x, y, w: ww, h: hh};
+    if (fits(w, list)) {
+      if (NOCARD[type]) w.card = false;
+      if (type === "agent") w.acc = cfg.accounts[0]?.name;
+      if (type === "pet") w.title = "Mochi";
+      if (type === "text") w.text = "Привет!";
+      list.push(w); sel = w.id; touch(); render(); return;
+    }
+  }
+  toast("Нет свободного места — уменьши или удали что-нибудь");
+}
+
+const fieldText = (label, obj, key, ph = "", hint) => h("div", {class: "field"}, h("div", {class: "label"}, label),
+  h("input", {type: "text", value: obj[key] || "", placeholder: ph, oninput: (e) => { obj[key] = e.target.value; touch(); }}), hint && h("div", {class: "hint"}, hint));
+const fieldSelect = (label, obj, key, options, def) => h("div", {class: "field"}, h("div", {class: "label"}, label),
+  h("select", {onchange: (e) => { const v = e.target.value; obj[key] = isNaN(+v) || v === "" ? v : +v; touch(); }},
+    options.map(([v, t]) => h("option", {value: v, selected: String(obj[key] ?? def) === String(v)}, t))));
+const fieldColor = (label, obj, key, def) => h("div", {class: "field"}, h("div", {class: "label"}, label),
+  h("div", {class: "row"}, h("input", {type: "color", class: "swatch", value: "#" + ((obj[key] || def || "").replace("#", "") || "151515"), oninput: (e) => { obj[key] = e.target.value; touch(); }}),
+    h("button", {class: "btn sm ghost", onclick: () => { delete obj[key]; touch(); render(); }}, "по умолчанию")));
+const fieldToggle = (label, obj, key, def) => h("label", {class: "toggle field"}, h("input", {type: "checkbox", checked: obj[key] ?? def, onchange: (e) => { obj[key] = e.target.checked; touch(); }}), label);
+
+function inspector(w) {
+  if (!w) return screenInspector(cfg.screens[scr]);
+  const list = cfg.screens[scr].widgets;
+  const out = [h("div", {class: "row", style: "margin-bottom:12px"}, h("h3", {}, TYPES[w.type].name), h("span", {class: "sp"}), h("span", {class: "status"}, `${w.w}×${w.h}`))];
+  if (w.type === "agent") out.push(fieldSelect("Аккаунт", w, "acc", cfg.accounts.map(a => [a.name, a.name]), cfg.accounts[0]?.name));
+  if (w.type === "text") {
+    out.push(h("div", {class: "field"}, h("div", {class: "label"}, "Текст"),
+      h("textarea", {oninput: (e) => { w.text = e.target.value; touch(); }}, w.text || "")));
+    out.push(fieldText("Заголовок", w, "title", "необязательно"));
+    out.push(fieldSelect("Размер", w, "size", [[0, "Авто"], [1, "Мелкий"], [2, "Средний"], [3, "Крупный"]], 0));
+    out.push(fieldSelect("Выравнивание", w, "align", [[0, "Слева"], [1, "По центру"], [2, "Справа"]], 0));
+    out.push(fieldColor("Цвет текста", w, "color"));
+  }
+  if (w.type === "weather" || w.type === "clock") out.push(fieldSelect("Выравнивание", w, "align", [[0, "Слева"], [1, "По центру"], [2, "Справа"]], 0));
+  if (w.type === "calendar") out.push(fieldText("Заголовок", w, "title", "по умолчанию: сегодняшняя дата"));
+  if (w.type === "ping") out.push(fieldText("Заголовок", w, "title", "SERVERS"), h("p", {class: "hint"}, "Список серверов — во вкладке «Серверы»."));
+  if (w.type === "nodes") {
+    out.push(fieldText("Заголовок", w, "title", "NODES"));
+    const r = state.remna || {};
+    out.push(h("p", {class: "hint"}, r.configured ? (r.error ? "Панель: ошибка — " + r.error : `Панель: ${r.nodes} нод, обновлено ${r.ago ?? "—"} сек назад`)
+      : "Remnawave не подключён: заполни /opt/ai-panel/.env на сервере (см. «Настройки»)."));
+    out.push(h("p", {class: "hint"}, "Широкий блок (6 колонок) показывает CPU и RAM полосками, средний — цифрами, узкий — только онлайн."));
+  }
+  if (w.type === "pet") {
+    out.push(fieldText("Имя", w, "title", "Mochi"), fieldColor("Цвет", w, "color", "FFC857"));
+    out.push(h("p", {class: "hint"}, "Настроение зависит от лимитов: свежие — чилит, кончаются — устаёт, ночью спит. Энергия — сессия, еда — неделя."));
+  }
+  if (w.type === "gif") {
+    const gifs = cfg.gifs || (cfg.gifs = {});
+    const input = h("input", {type: "file", accept: "image/gif,image/png,image/jpeg,image/webp", style: "display:none", onchange: async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      try {
+        const r = await (await api("/api/gif?name=" + encodeURIComponent(f.name), {method: "POST", body: f})).json();
+        gifs[r.id] = {name: r.name}; w.gif = r.id; touch(); render();
+      } catch (err) { toast("Не получилось: " + err.message); }
+    }});
+    out.push(h("div", {class: "field"}, h("div", {class: "label"}, "Картинка"),
+      Object.keys(gifs).length ? h("select", {onchange: (e) => { w.gif = e.target.value; touch(); render(); }},
+        h("option", {value: ""}, "— не выбрана —"), Object.entries(gifs).map(([id, g]) => h("option", {value: id, selected: w.gif === id}, g.name || id))) : null,
+      h("div", {class: "row", style: "margin-top:8px"}, input, h("button", {class: "btn sm", onclick: () => input.click()}, "Загрузить файл")),
+      w.gif && h("img", {class: "gifthumb", src: "/gif/" + w.gif + ".gif"}),
+      h("div", {class: "hint"}, "GIF, PNG или JPG. Сервер сам ужмёт под размер блока.")));
+    out.push(fieldSelect("Как вписать", w, "fit", [["contain", "Целиком"], ["cover", "Заполнить блок"]], "contain"));
+  }
+  out.push(fieldToggle("Подложка-карточка", w, "card", !NOCARD[w.type]));
+  out.push(h("div", {class: "row", style: "margin-top:16px"},
+    h("button", {class: "btn sm", onclick: () => {
+      const c = {...w, id: uid()}; let ok = false;
+      for (let y = 0; y + c.h <= 4 && !ok; y++) for (let x = 0; x + c.w <= 6 && !ok; x++) { c.x = x; c.y = y; ok = fits(c, list); }
+      if (!ok) return toast("Нет места для копии");
+      list.push(c); sel = c.id; touch(); render();
+    }}, "Дублировать"),
+    h("span", {class: "sp"}),
+    h("button", {class: "btn sm danger", onclick: () => { cfg.screens[scr].widgets = list.filter(x => x !== w); sel = null; touch(); render(); }}, "Удалить")));
+  return out;
+}
+
+function screenInspector(S) {
+  return [
+    h("h3", {}, "Экран"),
+    h("p", {class: "sub"}, "Выбери блок на превью, чтобы настроить его."),
+    fieldText("Название", S, "name", "Экран"),
+    h("div", {class: "row"},
+      h("button", {class: "btn sm", disabled: scr === 0, onclick: () => { [cfg.screens[scr - 1], cfg.screens[scr]] = [cfg.screens[scr], cfg.screens[scr - 1]]; scr--; touch(); render(); }}, "← левее"),
+      h("button", {class: "btn sm", disabled: scr === cfg.screens.length - 1, onclick: () => { [cfg.screens[scr + 1], cfg.screens[scr]] = [cfg.screens[scr], cfg.screens[scr + 1]]; scr++; touch(); render(); }}, "правее →"),
+      h("span", {class: "sp"}),
+      h("button", {class: "btn sm danger", disabled: cfg.screens.length < 2, onclick: () => { if (confirm("Удалить экран «" + S.name + "»?")) { cfg.screens.splice(scr, 1); scr = 0; touch(); render(); } }}, "Удалить")),
+    h("p", {class: "hint", style: "margin-top:16px"}, "На панели экраны листаются свайпом или тапом у края. Первый экран — домашний."),
+  ];
+}
+
+let pvTimer = null, pvSeq = 0;
+function schedulePreview(now) {
+  clearTimeout(pvTimer);
+  pvTimer = setTimeout(async () => {
+    const img = $("#pv"); if (!img) return;
+    const seq = ++pvSeq;
+    try {
+      const r = await api("/api/preview", {method: "POST", body: JSON.stringify({config: cfg, screen: scr, dark})});
+      const url = URL.createObjectURL(await r.blob());
+      if (seq !== pvSeq || !$("#pv")) return URL.revokeObjectURL(url);
+      const old = $("#pv").src; $("#pv").src = url; if (old.startsWith("blob:")) URL.revokeObjectURL(old);
+    } catch (e) { if (!state.renderer) toast("Превью недоступно: на сервере нет рендерера"); }
+  }, now ? 0 : 280);
+}
+
+/* ---------------- calendars ---------------- */
+function viewCalendars() {
+  const list = cfg.calendars;
+  return h("div", {class: "card"},
+    h("h3", {}, "Календари"),
+    h("p", {class: "sub"}, "Любой календарь по ICS-ссылке. События на сегодня и завтра появятся в виджете «Календарь»."),
+    h("div", {class: "list"}, list.length ? list.map((c, i) => {
+      const res = h("div", {class: "res"}, state.calendars?.[c.url] || "");
+      return h("div", {class: "card", style: "padding:12px"}, h("div", {class: "item"},
+        h("div", {class: "c3"}, h("div", {class: "label"}, "Название"), h("input", {class: "in", value: c.name || "", oninput: (e) => { c.name = e.target.value; touch(); }})),
+        h("div", {class: "c6"}, h("div", {class: "label"}, "ICS-ссылка"), h("input", {class: "in", value: c.url || "", placeholder: "https://…/basic.ics", oninput: (e) => { c.url = e.target.value; touch(); }})),
+        h("div", {class: "c3 row"},
+          h("input", {type: "color", class: "swatch", value: "#" + (c.color || "4F7FE0").replace("#", ""), oninput: (e) => { c.color = e.target.value; touch(); }}),
+          h("button", {class: "btn sm", onclick: async () => {
+            res.textContent = "проверяю…"; res.className = "res";
+            try {
+              const r = await (await api("/api/caltest", {method: "POST", body: JSON.stringify(c)})).json();
+              res.className = "res ok";
+              res.textContent = `ok — ${r.count} событий на неделю` + (r.next.length ? "\n" + r.next.map(e => e.start + "  " + e.title).join("\n") : "");
+            } catch (e) { res.className = "res bad"; res.textContent = "ошибка: " + e.message; }
+          }}, "Проверить"),
+          h("button", {class: "btn sm ghost danger", onclick: () => { list.splice(i, 1); touch(); render(); }}, "✕")),
+        h("label", {class: "toggle c12"}, h("input", {type: "checkbox", checked: c.enabled !== false, onchange: (e) => { c.enabled = e.target.checked; touch(); }}), "Показывать")), res);
+    }) : h("div", {class: "empty"}, "Пока ни одного календаря")),
+    h("div", {class: "row", style: "margin-top:12px"}, h("button", {class: "btn", onclick: () => { list.push({name: "Календарь", url: "", color: "#4F7FE0"}); touch(); render(); }}, "+ Добавить календарь")),
+    h("div", {style: "margin-top:20px"}, h("div", {class: "label"}, "Где взять ссылку"),
+      h("div", {class: "hint", html:
+        "<b>Google</b> — calendar.google.com → настройки календаря → «Секретный адрес в формате iCal».<br>" +
+        "<b>Яндекс</b> — Календарь → ⋯ у календаря → Настроить → «Экспорт» → ссылка ICS.<br>" +
+        "<b>iCloud</b> — приложение Календарь → поделиться → «Публичный календарь» → скопировать ссылку (webcal:// подойдёт).<br>" +
+        "<b>Расписание ЦУ</b> — если в личном кабинете есть экспорт в календарь, вставь его ссылку. Если нет — подпишись на расписание в Google или Яндекс и подключи тот календарь."})));
+}
+
+/* ---------------- ping ---------------- */
+function viewPing() {
+  const list = cfg.ping;
+  return h("div", {class: "card"},
+    h("h3", {}, "Серверы"),
+    h("p", {class: "sub"}, "Хаб проверяет их раз в минуту. Ping — обычный ICMP, TCP — открыт ли порт, HTTP — отвечает ли сайт."),
+    h("div", {class: "list"}, list.length ? list.map((p, i) => {
+      const res = h("div", {class: "res"}, state.pings && p.name in state.pings ? (state.pings[p.name] >= 0 ? state.pings[p.name] + " ms" : "не отвечает") : "");
+      return h("div", {class: "card", style: "padding:12px"}, h("div", {class: "item"},
+        h("div", {class: "c3"}, h("div", {class: "label"}, "Название"), h("input", {class: "in", value: p.name || "", oninput: (e) => { p.name = e.target.value; touch(); }})),
+        h("div", {class: "c4"}, h("div", {class: "label"}, "Адрес"), h("input", {class: "in", value: p.host || "", placeholder: "1.2.3.4 или site.com", oninput: (e) => { p.host = e.target.value; touch(); }})),
+        h("div", {class: "c2"}, h("div", {class: "label"}, "Способ"), h("select", {class: "in", onchange: (e) => { p.kind = e.target.value; touch(); render(); }},
+          [["icmp", "Ping"], ["tcp", "TCP порт"], ["http", "HTTP"]].map(([v, t]) => h("option", {value: v, selected: (p.kind || "icmp") === v}, t)))),
+        h("div", {class: "c1", style: "grid-column:span 1"}, p.kind === "tcp" && [h("div", {class: "label"}, "Порт"), h("input", {class: "in", type: "number", value: p.port || 443, oninput: (e) => { p.port = +e.target.value; touch(); }})]),
+        h("div", {class: "c2 row"},
+          h("button", {class: "btn sm", onclick: async () => {
+            res.textContent = "…";
+            try { const r = await (await api("/api/pingtest", {method: "POST", body: JSON.stringify(p)})).json(); res.className = "res " + (r.ms >= 0 ? "ok" : "bad"); res.textContent = r.ms >= 0 ? r.ms + " ms" : "не отвечает"; }
+            catch (e) { res.textContent = e.message; }
+          }}, "Проверить"),
+          h("button", {class: "btn sm ghost danger", onclick: () => { list.splice(i, 1); touch(); render(); }}, "✕"))), res);
+    }) : h("div", {class: "empty"}, "Добавь свои ноды, бота или сайты")),
+    h("div", {class: "row", style: "margin-top:12px"}, h("button", {class: "btn", disabled: list.length >= 12, onclick: () => { list.push({name: "", host: "", kind: "icmp"}); touch(); render(); }}, "+ Добавить сервер")));
+}
+
+/* ---------------- accounts ---------------- */
+function viewAccounts() {
+  const list = cfg.accounts;
+  const found = Object.fromEntries((state.accounts_found || []).map(a => [a.name, a.found]));
+  const live = Object.fromEntries((state.agents || []).map(a => [a.name, a]));
+  return h("div", {class: "card"},
+    h("h3", {}, "Аккаунты"),
+    h("p", {class: "sub"}, "Каждый аккаунт — это папка, где лежит вход Claude Code или Codex на сервере."),
+    h("div", {class: "list"}, list.map((a, i) => {
+      const st = live[a.name];
+      const info = found[a.name] === false ? h("span", {class: "bad"}, "нет входа в " + a.dir) :
+        st ? h("span", {class: st.ok ? "ok" : "bad"}, st.ok ? `сессия ${Math.round(st.s ?? 0)}% · неделя ${Math.round(st.w ?? 0)}% · ${st.plan || ""}` : "не отвечает") : "ждём данных";
+      return h("div", {class: "card", style: "padding:12px"}, h("div", {class: "item"},
+        h("div", {class: "c3"}, h("div", {class: "label"}, "Имя"), h("input", {class: "in", value: a.name, oninput: (e) => {
+          const old = a.name; a.name = e.target.value;
+          cfg.screens.forEach(s => s.widgets.forEach(w => { if (w.acc === old) w.acc = a.name; })); touch();
+        }})),
+        h("div", {class: "c2"}, h("div", {class: "label"}, "Тип"), h("select", {class: "in", onchange: (e) => { a.kind = e.target.value; touch(); }},
+          [["claude", "Claude"], ["codex", "Codex"]].map(([v, t]) => h("option", {value: v, selected: a.kind === v}, t)))),
+        h("div", {class: "c4"}, h("div", {class: "label"}, "Папка на сервере"), h("input", {class: "in", value: a.dir || "", oninput: (e) => { a.dir = e.target.value; touch(); }})),
+        h("div", {class: "c3 row"},
+          h("input", {type: "color", class: "swatch", value: "#" + ((a.color || "").replace("#", "") || (a.kind === "claude" ? "D97757" : "151515")), oninput: (e) => { a.color = e.target.value; touch(); }}),
+          h("button", {class: "btn sm ghost danger", onclick: () => { list.splice(i, 1); touch(); render(); }}, "✕"))),
+        h("div", {class: "res"}, info));
+    })),
+    h("div", {class: "row", style: "margin-top:12px"}, h("button", {class: "btn", disabled: list.length >= 6, onclick: () => {
+      const n = list.length + 1; list.push({name: "Claude " + n, kind: "claude", dir: "~/.claude-" + n, color: ""}); touch(); render();
+    }}, "+ Добавить аккаунт")),
+    h("div", {style: "margin-top:20px"}, h("div", {class: "label"}, "Как залогинить новый аккаунт"),
+      h("div", {class: "hint", html: "На сервере, под root, укажи ту же папку что выше:<br>" +
+        "<code>CLAUDE_CONFIG_DIR=~/.claude-2 ~/.local/bin/claude</code> — вход, потом <code>/exit</code><br>" +
+        "<code>CODEX_HOME=~/.codex-2 codex login --device-auth</code><br>Сохрани здесь — хаб подхватит за минуту."})));
+}
+
+/* ---------------- settings ---------------- */
+function viewSettings() {
+  const s = cfg.settings;
+  const results = h("div", {class: "list", style: "margin-top:8px"});
+  const search = h("input", {class: "in", placeholder: "Город", value: s.city || ""});
+  const find = async () => {
+    results.replaceChildren(h("div", {class: "hint"}, "ищу…"));
+    try {
+      const r = await (await api("/api/geocode?q=" + encodeURIComponent(search.value))).json();
+      results.replaceChildren(...(r.length ? r : []).map(c => h("button", {class: "btn sm", style: "text-align:left", onclick: () => {
+        Object.assign(s, {city: c.name, lat: c.lat, lon: c.lon}); if (c.tz) s.tz = c.tz; touch(); render();
+      }}, `${c.name}, ${c.country} · ${c.tz}`)));
+      if (!r.length) results.replaceChildren(h("div", {class: "hint"}, "ничего не нашлось"));
+    } catch (e) { results.replaceChildren(h("div", {class: "hint bad"}, e.message)); }
+  };
+  const range = (label, key, min, max) => h("div", {class: "field"}, h("div", {class: "label"}, `${label} · `, h("span", {id: "v_" + key}, s[key])),
+    h("input", {type: "range", min, max, value: s[key], style: "width:100%", oninput: (e) => { s[key] = +e.target.value; $("#v_" + key).textContent = s[key]; touch(); }}));
+  return h("div", {class: "grid2", style: "grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"},
+    h("div", {class: "card"}, h("h3", {}, "Экран"), h("p", {class: "sub"}, "Тема и яркость панели."),
+      fieldSelect("Тема", s, "theme", [[0, "Всегда светлая"], [1, "Всегда тёмная"], [2, "Тёмная ночью"]], 2),
+      h("div", {class: "row"}, h("div", {style: "flex:1"}, fieldSelect("Ночь с", s, "night_from", [...Array(24).keys()].map(i => [i, i + ":00"]), 22)),
+        h("div", {style: "flex:1"}, fieldSelect("до", s, "night_to", [...Array(24).keys()].map(i => [i, i + ":00"]), 8))),
+      range("Яркость днём", "bright_day", 10, 255), range("Яркость ночью", "bright_night", 5, 255),
+      fieldSelect("Возврат на главный", s, "home_after", [[0, "никогда"], [30, "через 30 сек"], [60, "через минуту"], [120, "через 2 минуты"], [300, "через 5 минут"]], 120)),
+    h("div", {class: "card"}, h("h3", {}, "Место"), h("p", {class: "sub"}, "Для погоды и часового пояса."),
+      h("div", {class: "field"}, h("div", {class: "label"}, "Город"), h("div", {class: "row"}, search, h("button", {class: "btn sm", onclick: find}, "Найти")), results),
+      h("div", {class: "hint"}, `Сейчас: ${s.city || "—"} · ${(+s.lat).toFixed(2)}, ${(+s.lon).toFixed(2)}`),
+      fieldText("Часовой пояс", s, "tz", "Europe/Moscow", "IANA-имя, ставится само при выборе города")),
+    remnaCard());
+}
+
+function remnaCard() {
+  const r = state.remna || {};
+  const line = !r.configured ? h("span", {class: "bad"}, "не подключён")
+    : r.error ? h("span", {class: "bad"}, "ошибка: " + r.error)
+    : h("span", {class: "ok"}, `ок · ${r.nodes} нод · ${r.ago ?? "—"} сек назад` + (r.fields && !(r.fields.cpu && r.fields.ram) ? " · поля CPU/RAM не заданы" : ""));
+  return h("div", {class: "card"}, h("h3", {}, "Remnawave"), h("p", {class: "sub"}, "Ноды берутся из API панели только на чтение."),
+    h("div", {class: "res", style: "margin-bottom:10px"}, line),
+    h("div", {class: "hint", html: "Токен и ключ хранятся только на сервере в <code>/opt/ai-panel/.env</code>, сюда они не попадают.<br>" +
+      "Проверить что отдаёт панель: <code>python3 /opt/ai-panel/server/hub.py --remna-dump</code>"}));
+}
+
+load().catch(e => { $("#main").replaceChildren(h("div", {class: "empty"}, "Не удалось загрузить: " + e.message)); });
+</script>
+</body>
+</html>

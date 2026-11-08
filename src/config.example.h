@@ -20,3 +20,6 @@
 
 #define SCREEN_ROTATION        1
 #define TOUCH_OFFSET_ROTATION  0
+// flip touches if taps land mirrored
+#define TOUCH_FLIP_X           0
+#define TOUCH_FLIP_Y           0

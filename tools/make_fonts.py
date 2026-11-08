@@ -7,16 +7,18 @@ INTER = "/usr/share/fonts/opentype/inter/"
 MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 
 ASCII = "".join(chr(c) for c in range(32, 127))
-EXTRA = "°·–—→↑↓•…"
+EXTRA = "°·–—→↑↓•…«»№"
+CYR = "".join(chr(c) for c in range(0x410, 0x450)) + "Ёё"
 DIGITS = "0123456789"
 
 FONTS = [
     ("F_CLOCK", INTER + "InterDisplay-Medium.otf", 40, DIGITS + ":- "),
     ("F_HUGE", INTER + "InterDisplay-Light.otf", 58, DIGITS + ":-–° "),
-    ("F_BIG", INTER + "InterDisplay-SemiBold.otf", 24, DIGITS + "%+-–.: dhm"),
-    ("F_TITLE", INTER + "Inter-SemiBold.otf", 14, ASCII + EXTRA),
-    ("F_BODY", INTER + "Inter-Medium.otf", 12, ASCII + EXTRA),
-    ("F_MONO", MONO, 9, ASCII + EXTRA),
+    ("F_BIG", INTER + "InterDisplay-SemiBold.otf", 24, DIGITS + "%+-–.:° dhms/"),
+    ("F_TEXT", INTER + "InterDisplay-SemiBold.otf", 20, ASCII + EXTRA + CYR),
+    ("F_TITLE", INTER + "Inter-SemiBold.otf", 14, ASCII + EXTRA + CYR),
+    ("F_BODY", INTER + "Inter-Medium.otf", 12, ASCII + EXTRA + CYR),
+    ("F_MONO", MONO, 9, ASCII + EXTRA + CYR),
 ]
 
 
